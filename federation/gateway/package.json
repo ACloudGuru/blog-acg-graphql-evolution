@@ -11,7 +11,9 @@
     "@apollo/gateway": "^0.20.4",
     "apollo-server-lambda": "^2.18.1",
     "aws-sdk": "^2.761.0",
+    "aws-xray-sdk": "^3.2.0",
     "aws-xray-sdk-core": "^3.2.0",
+    "axios": "^0.20.0",
     "graphql": "^15.3.0",
     "graphql-tools": "^6.2.3"
   }

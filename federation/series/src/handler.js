@@ -44,11 +44,12 @@ const episodes = {
 };
 
 const typeDefs = gql`
+    # Used for resolving
     extend type VideoContent @key(fields: "contentId") {
         contentId: ID! @external
     }
 
-    type Episode {
+    type Episode @key(fields: "episodeId") {
         episodeId: ID!
         title: String
         content: VideoContent
@@ -67,6 +68,7 @@ const typeDefs = gql`
 
 const resolvers = {   
     Episode: {
+        // Used for resolving
         content(episode) {
             return { __typename: "VideoContent", contentId: episode.contentId };
         }
