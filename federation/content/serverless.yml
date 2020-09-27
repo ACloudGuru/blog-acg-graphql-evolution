@@ -18,8 +18,15 @@ plugins:
 package:
   include:
     - src/
+    - node_modules/
 
 functions:
-  contentByContentId:
-    handler: src/contentByContentId.handler
+  graphql:
+    handler: src/handler.handler
     timeout: 30
+    environment:
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    events:
+      - http:
+          path: /graphql
+          method: post

@@ -1,3 +1,14 @@
+const { ApolloServer, gql } = require('apollo-server-lambda');
+const { buildFederatedSchema } = require('@apollo/federation');
+
+const typeDefs = gql`
+    type VideoContent @key(fields: "contentId") {
+        contentId: ID!
+        duration: Int
+        url: String
+    }
+`;
+
 const videos = {
     'video-1': {
         contentId: 'video-1',
@@ -21,10 +32,16 @@ const videos = {
     },
 };
 
-const handler = async (event, context) => {
-    console.log(JSON.stringify({ event }, null, 2));
+const resolvers = {   
+    VideoContent: {
+        __resolveReference(reference) {
+            return videos[reference.contentId];
+        }
+    }
+}
 
-    return videos[event.contentId];
-};
+const server = new ApolloServer({
+    schema: buildFederatedSchema([{ typeDefs, resolvers }])
+});
 
-module.exports = { handler };
+exports.handler = server.createHandler();

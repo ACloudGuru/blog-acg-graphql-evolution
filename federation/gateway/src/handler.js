@@ -1,97 +1,22 @@
-const { graphql } = require('graphql');
-const { makeExecutableSchema } = require('graphql-tools');
+const { ApolloServer } = require('apollo-server-lambda');
+const { ApolloGateway } = require('@apollo/gateway');
 
 const AWSXRay = require('aws-xray-sdk-core');
 
-const typeDefs = `
-    type VideoContent {
-        contentId: ID!
-        duration: Int
-        url: String
-    }
+// TODO: HTTP or APIGateway
 
-    type Episode {
-        episodeId: ID!
-        title: String
-        content: VideoContent
-    }
+const gateway = new ApolloGateway({
+    serviceList: [
+      { name: 'series', url: 'http://localhost:3001/dev/graphql' },
+      { name: 'content', url: 'http://localhost:3003/dev/graphql' },
+    ],
+  });
+  
 
-    type Series {
-        seriesId: ID!
-        title: String
-        episodes: [Episode]
-    }
+const server = new ApolloServer({
+    gateway,
+    // Disable subscriptions (not currently supported with ApolloGateway)
+    subscriptions: false,
+});
 
-    type Query {
-        allSeries: [Series]
-    }
-`;
-
-const getInvokeBody = (lambdaResponse) => {
-    return JSON.parse(lambdaResponse.Payload)
-}
-
-const resolvers = {   
-    Episode: {
-        content: async ({ contentId }, __, { lambda }) => {
-            const response = await lambda
-                .invoke({ 
-                    FunctionName: 'content-dev-contentByContentId',
-                    Payload: JSON.stringify({ contentId }),
-                })
-                .promise();
-
-            return getInvokeBody(response);
-        }
-    },
-    
-    Series: {
-        episodes: async ({ seriesId }, __, { lambda }) => {
-            const response = await lambda
-                .invoke({ 
-                    FunctionName: 'series-dev-episodesBySeriesId',
-                    Payload: JSON.stringify({ seriesId }),
-                })
-                .promise();
-
-            console.log(JSON.stringify({ response }))
-
-            return getInvokeBody(response);
-        }
-    },
-
-    Query: {
-        allSeries: async (_, __, { lambda }) => {
-            const response = await lambda
-                .invoke({ FunctionName: 'series-dev-allSeries' })
-                .promise();
-
-            return getInvokeBody(response);
-        }
-    }
-}
-
-const handler = async (event, context) => {
-    const payload = JSON.parse(event.body);
-
-    // Only defined in the handler and required for serverless offline
-    const AWS = process.env._X_AMZN_TRACE_ID
-        ? AWSXRay.captureAWS(require('aws-sdk'))
-        : require('aws-sdk');
-
-    const lambda = new AWS.Lambda();
-
-    const response = await graphql(
-        makeExecutableSchema({ typeDefs, resolvers }),
-        payload.query,
-        null,
-        { lambda }
-    );
-
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ response }, null, 2)
-    };
-};
-
-module.exports = { handler }
+exports.handler = server.createHandler();

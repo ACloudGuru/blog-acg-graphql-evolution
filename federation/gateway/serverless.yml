@@ -11,11 +11,6 @@ provider:
   tracing:
     lambda: true
     apiGateway: true 
-  # TODO: These should only be the permissions to invoke the lambda functions
-  iamRoleStatements:
-    - Effect: Allow
-      Action: "*"
-      Resource: "*"
 
 plugins:
   - serverless-offline
