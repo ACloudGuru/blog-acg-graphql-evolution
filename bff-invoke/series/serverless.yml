@@ -1,0 +1,29 @@
+service:
+  name: series
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stackName: ${self:service}-${self:provider.stage}
+  stage: ${opt:stage}
+  region: ${env:AWS_REGION}
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
+plugins:
+  - serverless-offline
+
+package:
+  include:
+    - src/
+
+functions:
+  allSeries:
+    handler: src/allSeries.handler
+    timeout: 30
+
+  episodesBySeriesId:
+    handler: src/episodesBySeriesId.handler
+    timeout: 30

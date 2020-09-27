@@ -2,7 +2,7 @@
 
 Core: 
 
-- [ ] Lambda and XRay, lambda cold starts
+- [x] Lambda and XRay, lambda cold starts (best case: Startup 100ms + Initialisation 150ms, common case: Startup: 300ms + Intialisation of 600ms)
 - [ ] Bff & downstream lambda functions through invoke
 - [ ] GraphQL Federation
 

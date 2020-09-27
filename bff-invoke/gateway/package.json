@@ -1,0 +1,16 @@
+{
+  "name": "simplest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^2.3.0",
+    "serverless-offline": "^6.8.0"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.761.0",
+    "aws-xray-sdk-core": "^3.2.0",
+    "graphql": "^15.3.0",
+    "graphql-tools": "^6.2.3"
+  }
+}

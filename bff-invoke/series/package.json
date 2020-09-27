@@ -1,0 +1,10 @@
+{
+  "name": "simplest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^2.3.0",
+    "serverless-offline": "^6.8.0"
+  }
+}

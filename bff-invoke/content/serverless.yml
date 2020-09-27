@@ -1,0 +1,25 @@
+service:
+  name: content
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stackName: ${self:service}-${self:provider.stage}
+  stage: ${opt:stage}
+  region: ${env:AWS_REGION}
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
+plugins:
+  - serverless-offline
+
+package:
+  include:
+    - src/
+
+functions:
+  contentByContentId:
+    handler: src/contentByContentId.handler
+    timeout: 30
