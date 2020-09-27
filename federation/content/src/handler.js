@@ -1,19 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server-lambda');
 const { buildFederatedSchema } = require('@apollo/federation');
-
-const typeDefs = gql`
-    type VideoContent @key(fields: "contentId") {
-        contentId: ID!
-        duration: Int
-        url: String
-    }
-
-    # Used for resolving
-    extend type Episode @key(fields: "episodeId") {
-        episodeId: ID! @external
-        contentFromContentService: VideoContent
-    }
-`;
+const _ = require('lodash/fp');
 
 const videos = {
     'video-1': {
@@ -46,19 +33,48 @@ const videos = {
     },
 };
 
+
+const typeDefs = gql`
+    type VideoContent @key(fields: "contentId") @key(fields: "seriesId")  {
+        contentId: ID!
+        seriesId: ID!
+        episodeId: ID!
+        duration: Int
+        url: String
+        episode: Episode
+    }
+
+    # Used for extending
+    extend type Episode @key(fields: "episodeId") {
+        episodeId: ID! @external                        # @external means it exists in another service
+        contentFromContentService: VideoContent
+    }
+`;
+
 const resolvers = {   
     // Used for resolving
     VideoContent: {
         __resolveReference(reference) {
+            console.log('VideoContent.__resolveReference', JSON.stringify({ reference }, null, 2));
             return videos[reference.contentId];
+        },
+        episode(content) {
+            // console.log('VideoContent.episode', JSON.stringify({ content }, null, 2));
+            return { __typename: "Episode", episodeId: content.episodeId };
         }
     },
-
+    
+    // Used for extending
     Episode: {
-        // Used for extending
         contentFromContentService(episode) {
-            console.log(episode)
-            return videos['video-1'];
+            // console.log(JSON.stringify({ episode }, null, 2));
+
+            const contentByEpisodeId = _.flow([
+                _.values,
+                _.find(['episodeId', episode.episodeId])
+            ]);
+
+            return contentByEpisodeId(videos);
         }
     }
 }

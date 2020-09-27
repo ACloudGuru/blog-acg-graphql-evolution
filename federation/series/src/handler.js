@@ -47,10 +47,12 @@ const typeDefs = gql`
     # Used for resolving
     extend type VideoContent @key(fields: "contentId") {
         contentId: ID! @external
+        seriesId: ID! @external
     }
 
-    type Episode @key(fields: "episodeId") {
+    type Episode @key(fields: "seriesId") @key(fields: "episodeId") {
         episodeId: ID!
+        seriesId: ID!
         title: String
         content: VideoContent
     }
@@ -68,9 +70,15 @@ const typeDefs = gql`
 
 const resolvers = {   
     Episode: {
+        __resolveReference(reference) {
+            // console.log('Episode.__resolveReference', JSON.stringify({ reference }, null, 2));
+            return episodes['aws-this-week'][0];
+        },
+
         // Used for resolving
         content(episode) {
-            return { __typename: "VideoContent", contentId: episode.contentId };
+            console.log('Episode.content', JSON.stringify({ episode }, null, 2));
+            return { __typename: "VideoContent", contentId: episode.contentId, test: '123' };
         }
     },
     

@@ -10,6 +10,7 @@
   "dependencies": {
     "@apollo/gateway": "^0.20.4",
     "apollo-server-lambda": "^2.18.1",
-    "graphql": "^15.3.0"
+    "graphql": "^15.3.0",
+    "lodash": "^4.17.20"
   }
 }
