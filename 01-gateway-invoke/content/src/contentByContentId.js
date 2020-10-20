@@ -21,10 +21,19 @@ const videos = {
     },
 };
 
-const handler = async (event, context) => {
+const handler = async (event) => {
     console.log(JSON.stringify({ event }, null, 2));
 
-    return videos[event.args && event.args.contentId];
+    const contentIds = event.args && event.args.contentIds || [];
+
+    console.log(JSON.stringify({ contentIds }, null, 2));
+
+    const content = contentIds
+        .map(contentId => videos[contentId])
+
+    console.log(JSON.stringify({ content }, null, 2));
+
+    return content;
 };
 
 module.exports = { handler };

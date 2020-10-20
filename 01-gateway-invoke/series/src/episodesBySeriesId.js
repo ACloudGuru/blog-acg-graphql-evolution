@@ -1,6 +1,4 @@
-const AWS = require('aws-sdk');
-
-const lambda = new AWS.Lambda();
+const AWSXRay = require('aws-xray-sdk-core');
 
 const episodesBySeriesId = {
     'aws-this-week': [
@@ -41,11 +39,17 @@ const episodesBySeriesId = {
     ]
 };
 
-const getContentById = (contentId) => {
+const getContentByIds = (contentIds) => {
+    const AWS = process.env._X_AMZN_TRACE_ID
+        ? AWSXRay.captureAWS(require('aws-sdk'))
+        : require('aws-sdk');
+
+    const lambda = new AWS.Lambda();
+
     return lambda
         .invoke({ 
             FunctionName: 'content-dev-contentByContentId',
-            Payload: JSON.stringify({ args: { contentId } }),
+            Payload: JSON.stringify({ args: { contentIds } }),
         })
         .promise()
         .then(lambdaResponse => JSON.parse(lambdaResponse.Payload));
@@ -64,40 +68,51 @@ const validateContentAccess = (principalId, episode, content) => {
     return null;
 }
 
-const handler = async (event) => {
-    console.log(JSON.stringify({ event }, null, 2));
-    
-    const principalId = event.context && event.context.principalId;
-    
-    const episodes = episodesBySeriesId[event.args && event.args.seriesId];
+const getValidatedEpisodesBySeriesIds = async ({ seriesIds, principalId }) => {
+    const seriesEpisodes = seriesIds
+        .map(seriesId => episodesBySeriesId[seriesId]);
 
-    const content = await Promise.all(
-        episodes
+    const content = await getContentByIds(
+        seriesEpisodes
+            .flat()
             .map(episode => episode.contentId)
-            .map(getContentById)
     );
-
-    console.log(JSON.stringify({ content }, null, 2));
 
     const contentByContentId = content.reduce((acc, content) => {
         acc[content.contentId] = content;
         return acc;
     }, {});
 
-    console.log(JSON.stringify({ contentByContentId }, null, 2));
-
-    const episodesWithContent = episodes.map(episode => ({
+    // Restrict access if series episode is not free
+    const episodesWithContent = seriesEpisodes.map(se => se.map(episode => ({
         ...episode,
         content: validateContentAccess(
             principalId,
             episode,
             contentByContentId[episode.contentId]
         )
-    }));
-
-    console.log(JSON.stringify({ episodesWithContent }, null, 2));
+    })));
 
     return episodesWithContent;
+};
+
+const handler = async (event) => {
+    console.log(JSON.stringify({ event }, null, 2));
+        
+    const principalId = event.context && event.context.principalId;
+    
+    const seriesIds = event.args && event.args.seriesIds || [];
+
+    console.log(JSON.stringify({ seriesIds }, null, 2));
+
+    const seriesEpisodes = await getValidatedEpisodesBySeriesIds({ 
+        seriesIds,
+        principalId
+    });
+
+    console.log(JSON.stringify({ seriesEpisodes }, null, 2));
+
+    return seriesEpisodes;
 };
 
 module.exports = { handler };

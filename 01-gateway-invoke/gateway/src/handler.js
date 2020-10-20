@@ -1,6 +1,8 @@
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
 
+const DataLoader = require('dataloader');
+
 const AWSXRay = require('aws-xray-sdk-core');
 
 const typeDefs = `
@@ -39,32 +41,14 @@ const getInvokeBody = (lambdaResponse) => {
 
 const resolvers = {   
     Episode: {
-        author: async ({ authorId }, __, { lambda }) => {
-            const response = await lambda
-                .invoke({ 
-                    FunctionName: 'identity-dev-userByUserId',
-                    Payload: JSON.stringify({ args: { userId: authorId } }),
-                })
-                .promise();
-
-            console.log(JSON.stringify({ response }))
-
-            return getInvokeBody(response);
-        },        
+        author: ({ authorId }, __, { dataloaders: { userByUserIdLoader }}) => {
+            return userByUserIdLoader.load(authorId)
+        },     
     },
     
     Series: {
-        episodes: async ({ seriesId }, __, { lambda, principalId }) => {
-            const response = await lambda
-                .invoke({ 
-                    FunctionName: 'series-dev-episodesBySeriesId',
-                    Payload: JSON.stringify({ args: { seriesId }, context: { principalId }}),
-                })
-                .promise();
-
-            console.log(JSON.stringify({ response }))
-
-            return getInvokeBody(response);
+        episodes: ({ seriesId }, __, { dataloaders: { episodesBySeriesIdLoader }}) => {
+            return episodesBySeriesIdLoader.load(seriesId)
         },
     },
 
@@ -79,6 +63,30 @@ const resolvers = {
     }
 }
 
+const makeDataloaders = ({ principalId, lambda }) => ({
+    userByUserIdLoader: new DataLoader(async (userIds) => {
+        const response = await lambda
+            .invoke({ 
+                FunctionName: 'identity-dev-userByUserId',
+                Payload: JSON.stringify({ args: { userIds }}),
+            })
+            .promise();
+
+        return getInvokeBody(response);
+    }),
+
+    episodesBySeriesIdLoader: new DataLoader(async (seriesIds) => {
+        const response = await lambda
+            .invoke({ 
+                FunctionName: 'series-dev-episodesBySeriesId',
+                Payload: JSON.stringify({ args: { seriesIds }, context: { principalId }}),
+            })
+            .promise();
+
+        return getInvokeBody(response);
+    })
+});
+
 const handler = async (event, context) => {
     console.log(JSON.stringify({ event }, null, 2));
 
@@ -92,11 +100,13 @@ const handler = async (event, context) => {
 
     const lambda = new AWS.Lambda();
 
+    const dataloaders = makeDataloaders({ lambda, principalId })
+
     const response = await graphql(
         makeExecutableSchema({ typeDefs, resolvers }),
         payload.query,
         null,
-        { lambda, principalId }
+        { dataloaders, lambda }
     );
 
     return {
