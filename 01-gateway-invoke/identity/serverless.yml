@@ -1,0 +1,25 @@
+service:
+  name: identity
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stackName: ${self:service}-${self:provider.stage}
+  stage: ${opt:stage}
+  region: ${env:AWS_REGION}
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
+plugins:
+  - serverless-offline
+
+package:
+  include:
+    - src/
+
+functions:
+  userByUserId:
+    handler: src/userByUserId.handler
+    timeout: 30
