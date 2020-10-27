@@ -2,7 +2,7 @@ const { print, graphql } = require('graphql');
 const { wrapSchema, introspectSchema  } = require('@graphql-tools/wrap');
 const { stitchSchemas } = require('@graphql-tools/stitch');
 const { batchDelegateToSchema } = require('@graphql-tools/batch-delegate');
-
+const _ = require('lodash');
 const AWSXRay = require('aws-xray-sdk');
 AWSXRay.captureHTTPsGlobal(require('https'));
 
@@ -29,12 +29,15 @@ const executorWithUrl = (url, headers) => async ({ document, variables }) => {
   return fetchResult.data;
 };
 
-const getSchema = async (url, headers) => {
-    const executor = executorWithUrl(url, headers)
+// Cache per container
+const introspectUrl = _.memoize(url =>
+    introspectSchema(executorWithUrl(url))
+);
 
+const getSchema = async (url, headers) => {
     const schema = wrapSchema({
-        schema: await introspectSchema(executor),
-        executor,
+        schema: await introspectUrl(url),
+        executor: executorWithUrl(url, headers)
     });
     return schema;
 }

@@ -2,6 +2,12 @@ const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
 const { request, gql } = require('graphql-request');
 const DataLoader = require('dataloader');
+const AWSXRay = require('aws-xray-sdk');
+AWSXRay.captureHTTPsGlobal(require('https'));
+const https = require('https');
+const httpsAgent = new https.Agent({ keepAlive: true });
+
+const axios = require('axios');
 
 const series = [
     { 
@@ -111,7 +117,9 @@ const resolvers = {
 }
 
 const makeDataloaders = () => ({
-    contentByIdsLoader: new DataLoader(contentIds => {
+    contentByIdsLoader: new DataLoader(async (contentIds) => {
+        const axiosClient = axios.create({ httpsAgent });
+
         const query = gql`
             query ($contentIds: [String]) {
                 contentByIds(contentIds: $contentIds) {
@@ -120,22 +128,25 @@ const makeDataloaders = () => ({
                     url
                 }
             }
-        `
+        `;
+
+        const fetchResult = await axiosClient({
+          url: process.env.CONTENT_URL,
+          method: 'POST',
+          headers: Object.assign(
+              { 'Content-Type': 'application/json' }
+          ),
+          data: JSON.stringify({ query, variables: { contentIds } })
+        });
       
-        return request(
-            process.env.CONTENT_URL,
-            query,
-            { contentIds }
-        ).then(data => data.contentByIds)
+        return fetchResult.data.data.contentByIds;
     }),
 });
 
 const handler = async (event) => {
     const payload = JSON.parse(event.body);
     const principalId = event.headers.Authorization || null;
-    
-    console.log(JSON.stringify({ headers: event.headers }))
-    
+        
     const schema = makeExecutableSchema({
         typeDefs,
         resolvers
