@@ -1,0 +1,31 @@
+service:
+  name: stitching-identity
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stackName: ${self:service}-${self:provider.stage}
+  stage: ${opt:stage}
+  region: ${env:AWS_REGION}
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
+plugins:
+  - serverless-offline
+
+package:
+  include:
+    - src/
+
+functions:
+  graphql:
+    handler: src/handler.handler
+    timeout: 30
+    environment:
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    events:
+      - http:
+          path: /graphql
+          method: post

@@ -1,0 +1,21 @@
+{
+  "name": "simplest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^2.3.0",
+    "serverless-offline": "^6.8.0"
+  },
+  "dependencies": {
+    "@graphql-tools/batch-delegate": "^7.0.0",
+    "@graphql-tools/merge": "^6.2.4",
+    "@graphql-tools/stitch": "^7.0.1",
+    "@graphql-tools/wrap": "^6.2.4",
+    "aws-sdk": "^2.761.0",
+    "aws-xray-sdk-core": "^3.2.0",
+    "cross-fetch": "^3.0.6",
+    "graphql": "^15.3.0",
+    "graphql-tools": "^6.2.3"
+  }
+}

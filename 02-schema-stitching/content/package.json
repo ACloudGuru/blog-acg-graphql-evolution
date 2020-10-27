@@ -1,0 +1,15 @@
+{
+  "name": "simplest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^2.3.0",
+    "serverless-offline": "^6.8.0"
+  },
+  "dependencies": {
+    "@apollo/federation": "^0.20.4",
+    "apollo-server-lambda": "^2.18.1",
+    "graphql": "^15.3.0"
+  }
+}
