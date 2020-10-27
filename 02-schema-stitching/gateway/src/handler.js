@@ -1,24 +1,36 @@
-const { fetch } = require('cross-fetch');
 const { print, graphql } = require('graphql');
 const { wrapSchema, introspectSchema  } = require('@graphql-tools/wrap');
 const { stitchSchemas } = require('@graphql-tools/stitch');
 const { batchDelegateToSchema } = require('@graphql-tools/batch-delegate');
 
+const AWSXRay = require('aws-xray-sdk');
+AWSXRay.captureHTTPsGlobal(require('https'));
+
+const https = require('https');
+const httpsAgent = new https.Agent({ keepAlive: true });
+
+const axios = require('axios');
+
 const executorWithUrl = (url, headers) => async ({ document, variables }) => {
   const query = print(document);
-  const fetchResult = await fetch(url, {
+  
+  const axiosClient = axios.create({ httpsAgent });
+
+  const fetchResult = await axiosClient({
+    url,
     method: 'POST',
     headers: Object.assign(
         { 'Content-Type': 'application/json' },
         headers
     ),
-    body: JSON.stringify({ query, variables })
+    data: JSON.stringify({ query, variables })
   });
-  return fetchResult.json();
+
+  return fetchResult.data;
 };
 
-const getSchema = async (url) => {
-    const executor = executorWithUrl(url)
+const getSchema = async (url, headers) => {
+    const executor = executorWithUrl(url, headers)
 
     const schema = wrapSchema({
         schema: await introspectSchema(executor),
@@ -40,9 +52,9 @@ const handler = async (event) => {
         contentSchema,
         identitySchema,
     ] = await Promise.all([
-        getSchema('http://localhost:4000/dev/graphql', headers), // Series
-        getSchema('http://localhost:5000/dev/graphql', headers), // Content            
-        getSchema('http://localhost:6000/dev/graphql', headers), // Identity
+        getSchema(process.env.SERIES_URL, headers),
+        getSchema(process.env.CONTENT_URL, headers),            
+        getSchema(process.env.IDENTITY_URL, headers),
     ]);
 
     const mergedSchemas = stitchSchemas({
@@ -83,7 +95,7 @@ const handler = async (event) => {
 
     return {
         statusCode: 200,
-        body: JSON.stringify({ response }, null, 2)
+        body: JSON.stringify(response, null, 2)
     };
 };
 

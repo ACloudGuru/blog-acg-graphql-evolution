@@ -13,7 +13,9 @@
     "@graphql-tools/stitch": "^7.0.1",
     "@graphql-tools/wrap": "^6.2.4",
     "aws-sdk": "^2.761.0",
+    "aws-xray-sdk": "^3.2.0",
     "aws-xray-sdk-core": "^3.2.0",
+    "axios": "^0.21.0",
     "cross-fetch": "^3.0.6",
     "graphql": "^15.3.0",
     "graphql-tools": "^6.2.3"

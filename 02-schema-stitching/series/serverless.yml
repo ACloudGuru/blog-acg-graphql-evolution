@@ -17,6 +17,8 @@ provider:
     - Effect: Allow
       Action: "*"
       Resource: "*"
+  environment:
+    CONTENT_URL: ${env:CONTENT_URL}
 
 plugins:
   - serverless-offline

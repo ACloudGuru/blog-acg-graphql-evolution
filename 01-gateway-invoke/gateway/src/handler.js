@@ -111,7 +111,7 @@ const handler = async (event, context) => {
 
     return {
         statusCode: 200,
-        body: JSON.stringify({ response }, null, 2)
+        body: JSON.stringify(response, null, 2)
     };
 };
 

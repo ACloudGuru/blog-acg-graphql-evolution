@@ -123,17 +123,19 @@ const makeDataloaders = () => ({
         `
       
         return request(
-            'http://localhost:5000/dev/graphql',
+            process.env.CONTENT_URL,
             query,
             { contentIds }
         ).then(data => data.contentByIds)
     }),
 });
 
-const handler = async (event, context) => {
+const handler = async (event) => {
     const payload = JSON.parse(event.body);
     const principalId = event.headers.Authorization || null;
-
+    
+    console.log(JSON.stringify({ headers: event.headers }))
+    
     const schema = makeExecutableSchema({
         typeDefs,
         resolvers
