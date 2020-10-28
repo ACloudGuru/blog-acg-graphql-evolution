@@ -1,5 +1,5 @@
 service:
-  name: federation-series
+  name: stitching-identity
 
 provider:
   name: aws
@@ -12,21 +12,12 @@ provider:
     lambda: true
     apiGateway: true
 
-  # TODO: These should only be the permissions to invoke the lambda functions
-  iamRoleStatements:
-    - Effect: Allow
-      Action: "*"
-      Resource: "*"
-  environment:
-    CONTENT_URL: ${env:CONTENT_URL}
-
 plugins:
   - serverless-offline
 
 package:
   include:
     - src/
-    - node_modules/
 
 functions:
   graphql:

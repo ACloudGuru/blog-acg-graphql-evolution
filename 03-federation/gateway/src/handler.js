@@ -1,5 +1,5 @@
 const { ApolloServer } = require('apollo-server-lambda');
-const { ApolloGateway } = require('@apollo/gateway');
+const { ApolloGateway, RemoteGraphQLDataSource } = require('@apollo/gateway');
 const AWSXRay = require('aws-xray-sdk');
 AWSXRay.captureHTTPsGlobal(require('https'));
 
@@ -8,28 +8,34 @@ const httpsAgent = new https.Agent({ keepAlive: true });
 
 const axios = require('axios');
 
-const URLList = {
-  offline: [
-    { name: 'series', url: 'http://localhost:3001/dev/graphql' },
-    { name: 'content', url: 'http://localhost:3003/dev/graphql' },
-  ],
-  online: [
-    { name: 'series', url: 'https://yi3yqefld5.execute-api.us-east-1.amazonaws.com/dev/graphql' },
-    { name: 'content', url: 'https://lxjy04ydvi.execute-api.us-east-1.amazonaws.com/dev/graphql' },
-  ],
+class AuthenticatedDataSource extends RemoteGraphQLDataSource {
+  willSendRequest({ request, context }) {
+    request.http.headers.set('Authorization', context.principalId);
+  }
 }
 
-const serviceList = process.env.IS_OFFLINE
-  ? URLList.offline
-  : URLList.online;
 
 const gateway = new ApolloGateway({
-    serviceList,
-    fetcher: axios.create({ httpsAgent })
+    serviceList: [
+        { name: 'series', url: process.env.SERIES_URL },
+        { name: 'content', url: process.env.CONTENT_URL },
+        { name: 'identity', url: process.env.IDENTITY_URL },  
+    ],
+    fetcher: axios.create({ httpsAgent }),
+    buildService({ url }) {
+      return new AuthenticatedDataSource({ url });
+    },  
 });
 
 const server = new ApolloServer({
     gateway,
+
+    context: (context) => {
+      const principalId = context.event.headers.Authorization || null;
+
+      return { principalId };
+    },
+
     // Disable subscriptions (not currently supported with ApolloGateway)
     subscriptions: false,
 });

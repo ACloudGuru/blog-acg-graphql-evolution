@@ -11,7 +11,11 @@ provider:
   tracing:
     lambda: true
     apiGateway: true 
-
+  environment:
+    SERIES_URL: ${env:SERIES_URL}
+    CONTENT_URL: ${env:CONTENT_URL}
+    IDENTITY_URL: ${env:IDENTITY_URL}
+    
 plugins:
   - serverless-offline
 
