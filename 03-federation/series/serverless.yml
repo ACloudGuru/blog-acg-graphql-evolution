@@ -1,5 +1,5 @@
 service:
-  name: gateway
+  name: federation-series
 
 provider:
   name: aws
@@ -10,8 +10,8 @@ provider:
 
   tracing:
     lambda: true
-    apiGateway: true 
-  
+    apiGateway: true
+
   # TODO: These should only be the permissions to invoke the lambda functions
   iamRoleStatements:
     - Effect: Allow
@@ -24,6 +24,7 @@ plugins:
 package:
   include:
     - src/
+    - node_modules/
 
 functions:
   graphql:

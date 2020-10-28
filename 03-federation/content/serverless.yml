@@ -1,5 +1,5 @@
 service:
-  name: series
+  name: federation-content
 
 provider:
   name: aws
@@ -18,12 +18,15 @@ plugins:
 package:
   include:
     - src/
+    - node_modules/
 
 functions:
-  allSeries:
-    handler: src/allSeries.handler
+  graphql:
+    handler: src/handler.handler
     timeout: 30
-
-  episodesBySeriesId:
-    handler: src/episodesBySeriesId.handler
-    timeout: 30
+    environment:
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    events:
+      - http:
+          path: /graphql
+          method: post

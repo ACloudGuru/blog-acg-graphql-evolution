@@ -1,5 +1,5 @@
 service:
-  name: content
+  name: federation-gateway
 
 provider:
   name: aws
@@ -10,7 +10,7 @@ provider:
 
   tracing:
     lambda: true
-    apiGateway: true
+    apiGateway: true 
 
 plugins:
   - serverless-offline
@@ -20,6 +20,12 @@ package:
     - src/
 
 functions:
-  contentByContentId:
-    handler: src/contentByContentId.handler
+  graphql:
+    handler: src/handler.handler
     timeout: 30
+    environment:
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    events:
+      - http:
+          path: /graphql
+          method: post
