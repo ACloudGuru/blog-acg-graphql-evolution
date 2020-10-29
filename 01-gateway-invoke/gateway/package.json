@@ -8,9 +8,11 @@
     "serverless-offline": "^6.8.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.761.0",
+    "aws-sdk": "^2.781.0",
     "aws-xray-sdk-core": "^3.2.0",
+    "bluebird": "^3.7.2",
     "graphql": "^15.3.0",
-    "graphql-tools": "^6.2.3"
+    "graphql-tools": "^6.2.3",
+    "lodash": "^4.17.20"
   }
 }

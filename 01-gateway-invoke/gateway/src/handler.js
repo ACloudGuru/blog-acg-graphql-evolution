@@ -1,3 +1,8 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
 

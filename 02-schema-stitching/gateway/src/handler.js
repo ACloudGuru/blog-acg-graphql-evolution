@@ -1,3 +1,8 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const { print, graphql } = require('graphql');
 const { wrapSchema, introspectSchema  } = require('@graphql-tools/wrap');
 const { stitchSchemas } = require('@graphql-tools/stitch');

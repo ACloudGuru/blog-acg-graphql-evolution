@@ -1,3 +1,8 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const AWSXRay = require('aws-xray-sdk-core');
 
 const episodesBySeriesId = {

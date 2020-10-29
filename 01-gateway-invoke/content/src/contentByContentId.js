@@ -1,3 +1,8 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const videos = {
     'video-1': {
         contentId: 'video-1',

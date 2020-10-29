@@ -1,3 +1,8 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const { ApolloServer, gql } = require('apollo-server-lambda');
 
 const identities = {

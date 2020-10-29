@@ -1,6 +1,11 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
-const { request, gql } = require('graphql-request');
+const { gql } = require('graphql-request');
 const DataLoader = require('dataloader');
 const AWSXRay = require('aws-xray-sdk');
 AWSXRay.captureHTTPsGlobal(require('https'));

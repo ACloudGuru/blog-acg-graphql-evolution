@@ -1,0 +1,3 @@
+{
+    "query": "query {\n  allSeries {\n    title\n    episodes {\n      title\n      authorId\n      content {\n        contentId\n        duration\n        url\n      }\n      author {\n        name\n      }\n    }\n  }\n}"
+}

@@ -1,3 +1,8 @@
+// Dependencies included for all functions
+require('aws-sdk');
+require('bluebird');
+require('lodash');
+
 const identities = {
     'auth0|123': {
         userId: 'auth0|123',
